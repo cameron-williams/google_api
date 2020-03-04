@@ -118,6 +118,8 @@ impl GoogleOAuthToken {
             ));
         }
 
+        println!("This application needs your consent to use Google Drive. Please check your browser and either approve or deny it.");
+
         // Create a listener that waits until we get a response from the user's consent.
         let (tx, rx) = channel();
         thread::spawn(move || {
