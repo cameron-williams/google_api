@@ -1,7 +1,5 @@
 use std::env;
 
-use std::collections::hash_map::Entry;
-use std::collections::HashMap;
 use std::fs::{create_dir_all, File, OpenOptions};
 use std::io::prelude::*;
 use std::io::{BufReader, BufWriter};
