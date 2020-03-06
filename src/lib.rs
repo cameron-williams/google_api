@@ -412,64 +412,6 @@ impl Drive {
             .send()
     }
 
-    // work in progress func for potential future exploring drive like a local fs
-    fn _get_file_hashmap(&self) -> Result<(), String> {
-        let mut map: HashMap<String, Vec<String>> = HashMap::new();
-
-        let resp: serde_json::Value = self.get("/files", None).unwrap().json().unwrap();
-
-        for f in resp["files"].as_array().unwrap() {
-            println!("{}", f);
-            if f["mimeType"].as_str().unwrap() == "application/vnd.google-apps.folder" {
-                map.extend(self._get_files_with_parent(
-                    f["id"].as_str().unwrap().to_string(),
-                    f["name"].as_str().unwrap().to_string(),
-                )?)
-            }
-        }
-        println!("{:#?}", map);
-
-        Ok(())
-    }
-
-    // work in progress func for potential future exploring drive like a local fs
-    fn _get_files_with_parent(
-        &self,
-        parent_id: String,
-        parent_name: String,
-    ) -> Result<HashMap<String, Vec<String>>, String> {
-        let mut map: HashMap<String, Vec<String>> = HashMap::new();
-        let resp: serde_json::Value = self
-            .get(
-                "/files",
-                Some(vec![("q", format!("'{}' in parents", parent_id).as_str())]),
-            )
-            .unwrap()
-            .json()
-            .unwrap();
-        // for each file, if that files path exists, add it to the vec for that path of ids. otherwise add new path with new vec with that id
-        // Iterate all returned items, if it's a file add the id of it to the map with it's path as the key
-        for f in resp["files"].as_array().unwrap() {
-            let id = String::from(f["id"].as_str().unwrap());
-            let current_path = format!(
-                "{}/{}",
-                parent_name,
-                f["name"].as_str().unwrap().to_string()
-            );
-
-            match map.entry(current_path) {
-                Entry::Vacant(e) => {
-                    e.insert(vec![id]);
-                }
-                Entry::Occupied(mut e) => {
-                    e.get_mut().push(id);
-                }
-            }
-        }
-
-        Ok(map)
-    }
-
     fn get_file_id_from_url(url: &str) -> Result<String, String> {
         // Get file id from passed url.
         let url = Url::parse(url).expect("invalid url format");
