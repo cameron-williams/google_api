@@ -19,13 +19,6 @@ use std::net::TcpListener;
 use std::sync::mpsc::channel;
 use std::thread;
 
-// #[cfg(test)]
-// mod tests {
-//     #[test]
-//     fn it_works() {
-//         assert_eq!(2 + 2, 4);
-//     }
-// }
 
 const GOOGLE_AUTH_URL: &str = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL: &str = "https://oauth2.googleapis.com/token";
