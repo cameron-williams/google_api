@@ -118,7 +118,7 @@ impl GoogleOAuthToken {
             ));
         }
 
-        println!("This application needs your consent to use Google Drive. Please check your browser and either approve or deny it.");
+        log::info!("This application needs your consent to use Google Drive. Please check your browser and either approve or deny it.");
 
         // Create a listener that waits until we get a response from the user's consent.
         let (tx, rx) = channel();
@@ -495,6 +495,14 @@ impl Drive {
         // Get file id from passed url.
         let id = Drive::get_file_id_from_url(url).expect("no id param in given url");
 
+        // If path is a dir, get the name of the file we are downloading and add it to the path.
+        let path = if path.is_dir() {
+            let v = self.file_metadata(url)?;
+            let mut p = PathBuf::from(path);
+            p.push(v["name"].as_str().unwrap());
+            p
+        } else {path};
+
         // Get the file from Drive and put to buffer.
         let mut resp = self.get(
             format!("/files/{}", id).as_str(),
@@ -511,7 +519,7 @@ impl Drive {
     }
 
     /// Upload file at given path to Google Drive. Todo:// make it one request somehow?
-    pub fn upload_file(&self, path: PathBuf) -> Result<(), reqwest::Error> {
+    pub fn upload_file(&self, path: PathBuf) -> Result<String, reqwest::Error> {
         // Google Drive file upload url has a different base url.
         let url = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart";
         let file = File::open(&path).expect("failed to open file for upload");
@@ -522,14 +530,15 @@ impl Drive {
             .body(file)
             .send()?
             .json()?;
-        let file_id = resp["id"].as_str().unwrap();
+        let file_id = resp["id"].as_str().unwrap().clone();
+        let url = format!("https://drive.google.com/open?id={}", file_id);
         // Patch to update file name with one from given path.
         self.patch(
             format!("/files/{}", file_id).as_str(),
             None,
             serde_json::json!({"name": path.file_name().unwrap().to_str()}),
         )?;
-        Ok(())
+        Ok(url)
     }
 
     /// Update file at given drive url from local file path.reqwest
@@ -546,8 +555,8 @@ impl Drive {
             .patch(fmt_url.as_str())
             .header("Authorization", format!("Bearer {}", &self.auth.token))
             .body(file)
-            .send()?
-            .json()?;
+            .send()?;
+            // .json()?;
         Ok(())
     }
 
