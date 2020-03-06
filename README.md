@@ -1,6 +1,6 @@
 # google_api
 
-google_api is an extremely basic and not well furnished Google API client library that I wrote for use in other scripts
+google_api is an extremely basic and very not well furnished Google API client library that I wrote for use in other scripts I've written.
 
 Currently it only supports Drive with the following features:
 - Manages and refreshes authentication with consent screen if required
