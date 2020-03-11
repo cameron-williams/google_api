@@ -423,8 +423,8 @@ impl Drive {
         Ok(resp)
     }
 
-    /// Download file from given drive url to given path.
-    pub fn download_file(&self, url: &str, path: PathBuf) -> Result<(), reqwest::Error> {
+    /// Download file from given drive url to given path. Return the path the file was downloaded to.
+    pub fn download_file(&self, url: &str, path: PathBuf) -> Result<PathBuf, reqwest::Error> {
         // Get file id from passed url.
         let id = Drive::get_file_id_from_url(url).expect("no id param in given url");
 
@@ -445,14 +445,14 @@ impl Drive {
         resp.copy_to(&mut buf)?;
 
         // Write file locally.
-        let mut file = File::create(path).unwrap();
+        let mut file = File::create(&path).unwrap();
         file.write_all(&buf).expect("failed to write buf to file");
 
-        Ok(())
+        Ok(path)
     }
 
     /// Upload file at given path to Google Drive. Todo:// make it one request somehow?
-    pub fn upload_file(&self, path: PathBuf) -> Result<String, reqwest::Error> {
+    pub fn upload_file(&self, path: &PathBuf) -> Result<String, reqwest::Error> {
         // Google Drive file upload url has a different base url.
         let url = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart";
         let file = File::open(&path).expect("failed to open file for upload");
